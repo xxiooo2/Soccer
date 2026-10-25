@@ -41,6 +41,12 @@ main{max-width:640px;margin:0 auto;padding:8px 16px 40px}
 .grid b{display:block;color:var(--text);font-size:16px}
 .note{font-size:12px;color:var(--sub);margin:8px 0 0}
 .bd{vertical-align:-5px}
+.sync,.kp{display:flex;gap:6px;align-items:center;max-width:640px;margin:0 auto;padding:4px 16px}
+.sync span{flex:1;color:var(--sub);font-size:12px}
+.sync button,.kp button{flex:none;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:14px;cursor:pointer}
+.sync button:disabled{opacity:.5}
+.kp input{flex:1;min-width:0}
+.kp[hidden]{display:none}
 .tabs{display:flex;gap:6px;max-width:640px;margin:0 auto;padding:6px 16px}
 .tabs button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--sub);font-size:15px;font-weight:700;cursor:pointer}
 .tabs button.on{background:var(--accent);color:var(--on);border-color:var(--accent)}
@@ -83,6 +89,9 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
 <header><h1>축구 선수 도감</h1><p>2026-27 시즌 · 5대 리그 <span id="total"></span>명</p></header>
 <nav class="tabs" id="tabs"><button data-t="players" class="on">선수</button><button data-t="table">순위</button><button data-t="matches">경기</button></nav>
 <div id="v-players">
+<div class="sync"><span id="sy"></span><button id="rf">새로고침</button><button id="ks">키</button></div>
+<div class="kp" id="kp" hidden><input id="ki" type="password" placeholder="football-data.org API 키" autocomplete="off"><button id="kok">저장</button><button id="kdel">삭제</button></div>
+<p class="asof" id="sm" style="max-width:640px;margin:0 auto;padding:0 16px"></p>
 <div class="tools">
 <input id="q" type="search" placeholder="선수·팀·국가 검색" aria-label="검색">
 <div class="chips" id="pos"></div>
@@ -182,6 +191,38 @@ const tm=kst(x[2],{hour:"2-digit",minute:"2-digit",hour12:false});
 h+=`<div class="mc"><div class="h">${esc(x[3])} ${badge(x[3],22)}</div><div class="s">${x[1]==="F"?x[5]+" - "+x[6]:"vs"}<small>${x[1]==="F"?"종료":tm}</small></div><div class="a">${badge(x[4],22)} ${esc(x[4])}</div>`+(x[1]==="S"?`<div class="pb"><i style="width:${x[7]}%"></i><i class="d" style="width:${x[8]}%"></i><i class="w" style="width:${x[9]}%"></i></div><div class="pl"><span>홈 ${Math.round(x[7])}%</span><span>무 ${Math.round(x[8])}%</span><span>원정 ${Math.round(x[9])}%</span></div>`:"")+"</div>"});
 $("mtm").innerHTML=h}
 $("mtm").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.m!=null)ml=+b.dataset.m;if(b.dataset.v!=null)mv=b.dataset.v==="0"?"S":"F";drawMatches()};
+const TMAP={"Arsenal FC":"Arsenal","Aston Villa FC":"Aston Villa","Chelsea FC":"Chelsea","Everton FC":"Everton","Fulham FC":"Fulham","Liverpool FC":"Liverpool","Manchester City FC":"Manchester City","Manchester United FC":"Manchester Utd","Newcastle United FC":"Newcastle","Sunderland AFC":"Sunderland","Tottenham Hotspur FC":"Tottenham","Hull City AFC":"Hull City","Leeds United FC":"Leeds United","Ipswich Town FC":"Ipswich Town","Nottingham Forest FC":"Nottingham","Crystal Palace FC":"Crystal Palace","Brighton & Hove Albion FC":"Brighton","Brentford FC":"Brentford","AFC Bournemouth":"Bournemouth","Coventry City FC":"Coventry City","Athletic Club":"Athletic Club","Club Atlético de Madrid":"Atlético Madrid","CA Osasuna":"Osasuna","RCD Espanyol de Barcelona":"Espanyol","FC Barcelona":"Barcelona","Getafe CF":"Getafe","Málaga CF":"Málaga","Real Madrid CF":"Real Madrid","Rayo Vallecano de Madrid":"Rayo Vallecano","Levante UD":"Levante","Real Betis Balompié":"Real Betis","Real Sociedad de Fútbol":"Real Sociedad","Villarreal CF":"Villarreal","Valencia CF":"Valencia","Deportivo Alavés":"Alavés","Elche CF":"Elche","RC Celta de Vigo":"Celta Vigo","Sevilla FC":"Sevilla","RC Deportivo La Coruña":"Dep. A Coruña","Real Racing Club de Santander":"Racing Sant","AC Milan":"Milan","ACF Fiorentina":"Fiorentina","AS Roma":"Roma","Atalanta BC":"Atalanta","Bologna FC 1909":"Bologna","Cagliari Calcio":"Cagliari","Genoa CFC":"Genoa","FC Internazionale Milano":"Inter","Juventus FC":"Juventus","SS Lazio":"Lazio","Parma Calcio 1913":"Parma","SSC Napoli":"Napoli","Udinese Calcio":"Udinese","Venezia FC":"Venezia","Frosinone Calcio":"Frosinone","US Sassuolo Calcio":"Sassuolo","Torino FC":"Torino","US Lecce":"Lecce","AC Monza":"Monza","Como 1907":"Como","1. FC Köln":"Köln","TSG 1899 Hoffenheim":"Hoffenheim","Bayer 04 Leverkusen":"Leverkusen","Borussia Dortmund":"Dortmund","FC Bayern München":"Bayern Munich","FC Schalke 04":"Schalke 04","Hamburger SV":"Hamburger SV","VfB Stuttgart":"Stuttgart","SV Werder Bremen":"Werder Bremen","1. FSV Mainz 05":"Mainz 05","FC Augsburg":"Augsburg","SC Freiburg":"Freiburg","Borussia Mönchengladbach":"Gladbach","Eintracht Frankfurt":"Frankfurt","1. FC Union Berlin":"Union Berlin","SC Paderborn 07":"Paderborn 07","SV 07 Elversberg":"Elversberg","RB Leipzig":"RB Leipzig","Toulouse FC":"Toulouse","Stade Brestois 29":"Brest","Olympique de Marseille":"Marseille","AJ Auxerre":"Auxerre","Lille OSC":"Lille","OGC Nice":"Nice","Olympique Lyonnais":"Lyon","Paris Saint-Germain FC":"Paris SG","FC Lorient":"Lorient","Stade Rennais FC 1901":"Rennes","ES Troyes AC":"Troyes","Angers SCO":"Angers","Le Havre AC":"Le Havre","Le Mans FC":"Le Mans","Racing Club de Lens":"Lens","AS Monaco FC":"Monaco","RC Strasbourg Alsace":"Strasbourg","Paris FC":"Paris FC"};
+const FDC=["PL","PD","SA","BL1","FL1"];
+const lsg=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lss=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},lsd=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const nz=s=>norm(String(s).replace(/ø/g,"o").replace(/ß/g,"ss").replace(/ł/g,"l").replace(/đ/g,"d")).replace(/[^a-z ]/g," ").split(/\s+/).filter(w=>w&&!["de","da","van","von","di","el","al","le","la","dos","do"].includes(w));
+function ratio(a,b){if(a===b)return 1;const m=a.length,n=b.length;if(!m||!n)return 0;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return 1-p[n]/Math.max(m,n)}
+function applyUpd(p,u){if(p.np){p.np=null;p.mp=u.mp;p.st=null;p.min=null;p.g=u.g;p.a=u.a==null?0:u.a;return true}
+let ch=false;if(u.g>=(p.g||0)&&u.g!==p.g){p.g=u.g;ch=true}if(u.a!=null&&u.a>=(p.a||0)&&u.a!==p.a){p.a=u.a;ch=true}if(u.mp>(p.mp||0)){p.mp=u.mp;ch=true}return ch}
+const byTeam={};P.forEach(p=>{p.k=nz(p.n);(byTeam[p.t]=byTeam[p.t]||[]).push(p)});
+function matchScorers(list){const cand=[];list.forEach((s,k)=>{const sq=TMAP[s.team&&s.team.name];if(!sq)return;const t=nz(s.player.name);(byTeam[sq]||[]).forEach(p=>{const a=new Set(p.k),b=new Set(t);let inter=0;a.forEach(w=>{if(b.has(w))inter++});const last=!!(p.k.length&&t.length&&(b.has(p.k[p.k.length-1])||a.has(t[t.length-1])));const r=ratio(p.k.join(" "),t.join(" "));if((inter&&last)||r>=0.85)cand.push([inter/Math.max(a.size,b.size,1)+(last?0.5:0)+r,k,p])})});
+cand.sort((x,y)=>y[0]-x[0]);const uk=new Set(),up=new Set(),out={};let n=0;
+cand.forEach(([sc,k,p])=>{if(uk.has(k)||up.has(p))return;uk.add(k);up.add(p);const s=list[k],u={g:s.goals||0,a:s.assists==null?null:s.assists,mp:s.playedMatches||0};if(applyUpd(p,u)){n++;out[p.n+"|"+p.t]=u}});return[n,out]}
+function loadSaved(){const raw=lsg("fdupd");if(!raw)return;try{const o=JSON.parse(raw);const idx={};P.forEach(p=>idx[p.n+"|"+p.t]=p);Object.keys(o.u||{}).forEach(k=>{if(idx[k])applyUpd(idx[k],o.u[k])});$("sy").textContent="마지막 업데이트: "+new Date(o.ts).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false})}catch(e){}}
+$("sy").textContent="기본 데이터(2026-10-24 기준)";
+const say=m=>{$("sm").textContent=m};
+$("ks").onclick=()=>{$("kp").hidden=!$("kp").hidden;if(!$("kp").hidden)$("ki").value=lsg("fdkey")||""};
+$("kok").onclick=()=>{const v=$("ki").value.trim();if(v){lss("fdkey",v);$("kp").hidden=true;say("키를 저장했어요. 이 기기에만 저장돼요. 이제 새로고침을 눌러보세요.")}};
+$("kdel").onclick=()=>{lsd("fdkey");$("ki").value="";say("키를 삭제했어요.")};
+$("rf").onclick=async()=>{const key=lsg("fdkey");if(!key){$("kp").hidden=false;say("먼저 football-data.org API 키를 입력하세요.");return}
+$("rf").disabled=true;let all=[];
+try{for(let i=0;i<FDC.length;i++){say("가져오는 중 "+(i+1)+"/5 (리그당 7초 걸려요)");
+const r=await fetch("https://api.football-data.org/v4/competitions/"+FDC[i]+"/scorers?limit=500",{headers:{"X-Auth-Token":key}});
+if(r.status===401||r.status===403){say("키가 올바르지 않거나 이 리그를 볼 권한이 없어요 ("+r.status+").");return}
+if(r.status===429){say("요청이 너무 많아요. 1분 뒤에 다시 눌러주세요.");return}
+if(!r.ok){say("서버 오류 ("+r.status+"). 잠시 뒤에 다시 시도해 주세요.");return}
+const j=await r.json();all=all.concat(j.scorers||[]);if(i<FDC.length-1)await new Promise(z=>setTimeout(z,7000))}
+const[n,out]=matchScorers(all);let prev={};try{prev=(JSON.parse(lsg("fdupd")||"{}").u)||{}}catch(e){}
+const u=Object.assign({},prev,out),ts=Date.now();lss("fdupd",JSON.stringify({ts,u}));
+$("sy").textContent="마지막 업데이트: "+new Date(ts).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false});
+say(all.length+"명의 득점 기록을 받아 "+n+"명을 바꿨어요.");render(false)}
+catch(e){say("연결할 수 없어요. 인터넷이 꺼져 있거나, 이 주소에서는 외부 요청이 막혀 있을 수 있어요(설치한 앱에서 시도해 보세요).")}
+finally{$("rf").disabled=false}};
+loadSaved();
 render(true);
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}})}</script>
