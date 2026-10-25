@@ -105,7 +105,7 @@ const P=[["Brenden Aaronson","us","USA","MF","Leeds United",0,25,2000,6,2,217,0,
 const LG=["프리미어리그","라리가","세리에 A","분데스리가","리그 1"];
 const POS={ALL:"전체",FW:"공격수",MF:"미드필더",DF:"수비수",GK:"골키퍼",NP:"미출전"};
 const PL={FW:"공격",MF:"미드",DF:"수비",GK:"GK"};
-const SORT={g:["골 많은 순",x=>x.g||0,"골"],a:["도움 많은 순",x=>x.a||0,"도움"],ga:["공격포인트 순",x=>(x.g||0)+(x.a||0),"G+A"],min:["출전시간 순",x=>x.min||0,"분"],age:["나이 어린 순",x=>-(x.age||99),"세"],cs:["클린시트 순",x=>x.cs==null?-1:x.cs,"클린시트"]};
+const SORT={g:["골 많은 순",x=>x.g||0,"골"],a:["도움 많은 순",x=>x.a||0,"도움"],ga:["공격포인트 순",x=>(x.g||0)+(x.a||0),"G+A"],age:["나이 어린 순",x=>-(x.age||99),"세"],cs:["클린시트 순",x=>x.cs==null?-1:x.cs,"클린시트"]};
 let pf="ALL",lf="all",tf="all",sk="g",shown=40;
 const $=id=>document.getElementById(id);
 $("total").textContent=P.length.toLocaleString();
@@ -149,10 +149,9 @@ const m=$("more");m.hidden=R.length<=shown;m.textContent="더 보기 ("+Math.max
 $("more").onclick=()=>{shown+=40;render(false)};
 $("list").onclick=e=>{const c=e.target.closest(".card");if(!c)return;const x=R[+c.dataset.i],dt=c.querySelector(".detail");
 if(!dt.innerHTML){const f=(l,v)=>`<div>${l}<b>${v==null?"-":v}</b></div>`;
-let h='<div class="th">'+badge(x.t,44)+'<span>'+esc(x.t)+' · '+LG[x.lg]+'</span></div><div class="grid">'+f("포지션",x.p)+f("나이",x.age?x.age+"세":null)+f("리그",LG[x.lg])+f("경기(선발)",x.st==null?x.mp:x.mp+" ("+x.st+")")+f("출전 시간",x.min==null?null:x.min.toLocaleString()+"분");
+let h='<div class="th">'+badge(x.t,44)+'<span>'+esc(x.t)+' · '+LG[x.lg]+'</span></div><div class="grid">'+f("포지션",x.p)+f("나이",x.age?x.age+"세":null)+f("리그",LG[x.lg])+f("경기(선발)",x.st==null?x.mp:x.mp+" ("+x.st+")");
 if(x.pp==="GK"){h+=f("클린시트",x.cs)+f("실점",x.ga)+f("선방",x.sv)+f("선방률",x.svp==null?null:x.svp+"%")+f("승-무-패",x.w+"-"+x.d+"-"+x.l)}
-else{h+=f("골",x.g)+f("도움",x.a)+f("슈팅(유효)",x.sh==null?null:x.sh+" ("+x.sot+")")+f("태클 성공",x.tk)+f("인터셉트",x.it)}
-h+=f("경고/퇴장",x.y+"/"+x.r);
+else{h+=f("골",x.g)+f("도움",x.a)}
 
 h+="</div>"+(x.np?'<p class="note">이번 시즌 아직 출전 기록이 없는 선수예요.</p>':"");
 dt.innerHTML=h}
