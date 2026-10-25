@@ -89,8 +89,7 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
 <header><h1>축구 선수 도감</h1><p>2026-27 시즌 · 5대 리그 <span id="total"></span>명</p></header>
 <nav class="tabs" id="tabs"><button data-t="players" class="on">선수</button><button data-t="table">순위</button><button data-t="matches">경기</button></nav>
 <div id="v-players">
-<div class="sync"><span id="sy"></span><button id="rf">새로고침</button><button id="ks">키</button></div>
-<div class="kp" id="kp" hidden><input id="ki" type="password" placeholder="football-data.org API 키" autocomplete="off"><button id="kok">저장</button><button id="kdel">삭제</button></div>
+<div class="sync"><span id="sy"></span><button id="rf">새로고침</button></div>
 <p class="asof" id="sm" style="max-width:640px;margin:0 auto;padding:0 16px"></p>
 <div class="tools">
 <input id="q" type="search" placeholder="선수·팀·국가 검색" aria-label="검색">
@@ -202,27 +201,21 @@ const byTeam={};P.forEach(p=>{p.k=nz(p.n);(byTeam[p.t]=byTeam[p.t]||[]).push(p)}
 function matchScorers(list){const cand=[];list.forEach((s,k)=>{const sq=TMAP[s.team&&s.team.name];if(!sq)return;const t=nz(s.player.name);(byTeam[sq]||[]).forEach(p=>{const a=new Set(p.k),b=new Set(t);let inter=0;a.forEach(w=>{if(b.has(w))inter++});const last=!!(p.k.length&&t.length&&(b.has(p.k[p.k.length-1])||a.has(t[t.length-1])));const r=ratio(p.k.join(" "),t.join(" "));if((inter&&last)||r>=0.85)cand.push([inter/Math.max(a.size,b.size,1)+(last?0.5:0)+r,k,p])})});
 cand.sort((x,y)=>y[0]-x[0]);const uk=new Set(),up=new Set(),out={};let n=0;
 cand.forEach(([sc,k,p])=>{if(uk.has(k)||up.has(p))return;uk.add(k);up.add(p);const s=list[k],u={g:s.goals||0,a:s.assists==null?null:s.assists,mp:s.playedMatches||0};if(applyUpd(p,u)){n++;out[p.n+"|"+p.t]=u}});return[n,out]}
-function loadSaved(){const raw=lsg("fdupd");if(!raw)return;try{const o=JSON.parse(raw);const idx={};P.forEach(p=>idx[p.n+"|"+p.t]=p);Object.keys(o.u||{}).forEach(k=>{if(idx[k])applyUpd(idx[k],o.u[k])});$("sy").textContent="마지막 업데이트: "+new Date(o.ts).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false})}catch(e){}}
-$("sy").textContent="기본 데이터(2026-10-24 기준)";
 const say=m=>{$("sm").textContent=m};
-$("ks").onclick=()=>{$("kp").hidden=!$("kp").hidden;if(!$("kp").hidden)$("ki").value=lsg("fdkey")||""};
-$("kok").onclick=()=>{const v=$("ki").value.trim();if(v){lss("fdkey",v);$("kp").hidden=true;say("키를 저장했어요. 이 기기에만 저장돼요. 이제 새로고침을 눌러보세요.")}};
-$("kdel").onclick=()=>{lsd("fdkey");$("ki").value="";say("키를 삭제했어요.")};
-$("rf").onclick=async()=>{const key=lsg("fdkey");if(!key){$("kp").hidden=false;say("먼저 football-data.org API 키를 입력하세요.");return}
-$("rf").disabled=true;let all=[];
-try{for(let i=0;i<FDC.length;i++){say("가져오는 중 "+(i+1)+"/5 (리그당 7초 걸려요)");
-const r=await fetch("https://api.football-data.org/v4/competitions/"+FDC[i]+"/scorers?limit=500",{headers:{"X-Auth-Token":key}});
-if(r.status===401||r.status===403){say("키가 올바르지 않거나 이 리그를 볼 권한이 없어요 ("+r.status+").");return}
-if(r.status===429){say("요청이 너무 많아요. 1분 뒤에 다시 눌러주세요.");return}
-if(!r.ok){say("서버 오류 ("+r.status+"). 잠시 뒤에 다시 시도해 주세요.");return}
-const j=await r.json();all=all.concat(j.scorers||[]);if(i<FDC.length-1)await new Promise(z=>setTimeout(z,7000))}
-const[n,out]=matchScorers(all);let prev={};try{prev=(JSON.parse(lsg("fdupd")||"{}").u)||{}}catch(e){}
-const u=Object.assign({},prev,out),ts=Date.now();lss("fdupd",JSON.stringify({ts,u}));
-$("sy").textContent="마지막 업데이트: "+new Date(ts).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false});
-say(all.length+"명의 득점 기록을 받아 "+n+"명을 바꿨어요.");render(false)}
-catch(e){say("연결할 수 없어요. 인터넷이 꺼져 있거나, 이 주소에서는 외부 요청이 막혀 있을 수 있어요(설치한 앱에서 시도해 보세요).")}
-finally{$("rf").disabled=false}};
-loadSaved();
+const fmt=ts=>new Date(ts).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false});
+$("sy").textContent="기본 데이터(2026-10-24 기준)";
+async function syncNow(manual){$("rf").disabled=true;
+try{const r=await fetch("scorers.json?"+Date.now(),{cache:"no-store"});
+if(r.status===404){if(manual)say("아직 자동 업데이트 파일(scorers.json)이 없어요. GitHub 설정을 먼저 해주세요.");return}
+if(!r.ok){if(manual)say("파일을 받지 못했어요 ("+r.status+").");return}
+const j=await r.json();const list=j.scorers||[];const[n]=matchScorers(list);
+if(j.updated)$("sy").textContent="마지막 업데이트: "+fmt(j.updated);
+if(manual||n)say(list.length+"명의 득점 기록 중 "+n+"명을 바꿨어요.");
+render(false)}
+catch(e){if(manual)say("파일을 불러오지 못했어요. 저장된 데이터를 보여주고 있어요.")}
+finally{$("rf").disabled=false}}
+$("rf").onclick=()=>syncNow(true);
+syncNow(false);
 render(true);
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}})}</script>
