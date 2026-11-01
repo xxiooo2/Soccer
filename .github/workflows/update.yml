@@ -11,12 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Fetch data
-        run: python3 fetch_scorers.py
+        run: python3 fetch_data.py
         env:
           FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
       - name: Save
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add scorers.json
+          git add scorers.json tables.json
           git diff --cached --quiet || (git commit -m "update data" && git push)
