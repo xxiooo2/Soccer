@@ -78,11 +78,23 @@ for code in SCORER_CODES:
         continue
     got += 1
     for s in d.get("scorers", []):
-        scorers.append({"player": {"name": s["player"]["name"]}, "team": {"name": s["team"]["name"]},
+        scorers.append({"competition": code, "player": {"name": s["player"]["name"]}, "team": {"name": s["team"]["name"]},
                         "playedMatches": s.get("playedMatches"), "goals": s.get("goals"),
                         "assists": s.get("assists")})
     print("득점자", code, len(d.get("scorers", [])))
 if got == len(SCORER_CODES) and scorers:
+    # UEFA Champions League is optional so a plan without CL scorers still refreshes domestic leagues.
+    cl = get("/competitions/CL/scorers?limit=500")
+    if cl is not None:
+        scorers.extend({"competition": "CL", "player": {"name": s["player"]["name"]},
+                        "team": {"name": s["team"]["name"]},
+                        "playedMatches": s.get("playedMatches"), "goals": s.get("goals"),
+                        "assists": s.get("assists")} for s in cl.get("scorers", []))
+        print("Champions League scorers", len(cl.get("scorers", [])))
+    else:
+        old_scorers = load("scorers.json", {}).get("scorers", [])
+        scorers.extend(s for s in old_scorers if s.get("competition") == "CL")
+        print("Could not fetch Champions League scorers; preserving previous records.")
     json.dump({"updated": now, "scorers": scorers}, open("scorers.json", "w", encoding="utf-8"),
               ensure_ascii=False, separators=(",", ":"))
     ok += 1
