@@ -119,7 +119,7 @@ const P=[["Brenden Aaronson","us","USA","MF","Leeds United",0,25,2000,6,2,217,0,
 const LG=["프리미어리그","라리가","세리에 A","분데스리가","리그 1"];
 const POS={ALL:"전체",FAV:"★ 즐겨찾기",FW:"공격수",MF:"미드필더",DF:"수비수",GK:"골키퍼",NP:"미출전"};
 const PL={FW:"공격",MF:"미드",DF:"수비",GK:"GK"};
-const SORT={g:["골 많은 순",x=>x.g||0,"리그 골"],a:["도움 많은 순",x=>x.a||0,"리그 도움"],ga:["공격포인트 순",x=>(x.g||0)+(x.a||0),"리그 G+A"],ug:["챔스 골 순",x=>x.ucl?.g||0,"챔스 골"],ua:["챔스 도움 순",x=>x.ucl?.a||0,"챔스 도움"],age:["나이 어린 순",x=>-(x.age||99),"세"],cs:["클린시트 순",x=>x.cs==null?-1:x.cs,"클린시트"]};
+const SORT={g:["전체 골 많은 순",x=>(x.g||0)+(x.ucl?.g||0),"전체 골"],a:["도움 많은 순",x=>x.a||0,"리그 도움"],ga:["공격포인트 순",x=>(x.g||0)+(x.a||0),"리그 G+A"],ug:["챔스 골 순",x=>x.ucl?.g||0,"챔스 골"],ua:["챔스 도움 순",x=>x.ucl?.a||0,"챔스 도움"],age:["나이 어린 순",x=>-(x.age||99),"세"],cs:["클린시트 순",x=>x.cs==null?-1:x.cs,"클린시트"]};
 let FAVS=new Set();try{FAVS=new Set(JSON.parse(localStorage.getItem("fav")||"[]"))}catch(e){}
 const favKey=x=>x.n+"|"+x.t,isFav=x=>FAVS.has(favKey(x));
 function saveFav(){try{localStorage.setItem("fav",JSON.stringify([...FAVS]))}catch(e){}}
